@@ -1,0 +1,16 @@
+# idea
+.idea
+.vscode
+
+# app specific vendor
+vendor
+
+# log
+*.log
+
+# app binaries
+/go-auth
+
+
+# other
+.DS_Store
