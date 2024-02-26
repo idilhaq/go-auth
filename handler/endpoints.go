@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"go-auth/generated"
-
+	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/labstack/echo/v4"
 )
 
