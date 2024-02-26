@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/idilhaq/go-auth/generated"
-	"github.com/idilhaq/go-auth/handler"
-	"github.com/idilhaq/go-auth/repository"
+	"go-auth/generated"
+	"go-auth/handler"
+	"go-auth/repository"
 
 	"github.com/labstack/echo/v4"
 )
