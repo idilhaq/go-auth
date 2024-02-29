@@ -20,7 +20,7 @@ test:
 
 generate: generated generate_mocks
 
-generated: api.yml
+generated: api.yml clean
 	@echo "Generating files..."
 	mkdir generated || true
 	oapi-codegen --package generated -generate types,server,spec $< > generated/api.gen.go
@@ -32,3 +32,6 @@ generate_mocks: $(INTERFACES_GEN_GO_FILES)
 $(INTERFACES_GEN_GO_FILES): %.mock.gen.go: %.go
 	@echo "Generating mocks $@ for $<"
 	mockgen -source=$< -destination=$@ -package=$(shell basename $(dir $<))
+
+run:
+	docker-compose up --build

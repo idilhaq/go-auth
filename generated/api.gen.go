@@ -23,21 +23,76 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
-// HelloResponse defines model for HelloResponse.
-type HelloResponse struct {
-	Message string `json:"message"`
+// LoginRequest defines model for LoginRequest.
+type LoginRequest struct {
+	Password    string `json:"password"`
+	PhoneNumber string `json:"phone_number"`
 }
 
-// HelloParams defines parameters for Hello.
-type HelloParams struct {
-	Id int `form:"id" json:"id"`
+// LoginResponse defines model for LoginResponse.
+type LoginResponse struct {
+	Id       *int    `json:"id,omitempty"`
+	JwtToken *string `json:"jwt_token,omitempty"`
 }
+
+// RegistrationRequest defines model for RegistrationRequest.
+type RegistrationRequest struct {
+	FullName    string `json:"full_name"`
+	Password    string `json:"password"`
+	PhoneNumber string `json:"phone_number"`
+}
+
+// RegistrationResponse defines model for RegistrationResponse.
+type RegistrationResponse struct {
+	Id *int `json:"id,omitempty"`
+}
+
+// UserInfoRequest defines model for UserInfoRequest.
+type UserInfoRequest struct {
+	FullName    string `json:"full_name"`
+	Password    string `json:"password"`
+	PhoneNumber string `json:"phone_number"`
+}
+
+// UserInfoResponse defines model for UserInfoResponse.
+type UserInfoResponse struct {
+	FullName    *string `json:"full_name,omitempty"`
+	PhoneNumber *string `json:"phone_number,omitempty"`
+}
+
+// GetUserIdParams defines parameters for GetUserId.
+type GetUserIdParams struct {
+	Authorization string `json:"Authorization"`
+}
+
+// PatchUserIdParams defines parameters for PatchUserId.
+type PatchUserIdParams struct {
+	Authorization string `json:"Authorization"`
+}
+
+// PostLoginJSONRequestBody defines body for PostLogin for application/json ContentType.
+type PostLoginJSONRequestBody = LoginRequest
+
+// PostRegisterJSONRequestBody defines body for PostRegister for application/json ContentType.
+type PostRegisterJSONRequestBody = RegistrationRequest
+
+// PatchUserIdJSONRequestBody defines body for PatchUserId for application/json ContentType.
+type PatchUserIdJSONRequestBody = UserInfoRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// This is just a test endpoint to get you started. Please delete this endpoint.
-	// (GET /hello)
-	Hello(ctx echo.Context, params HelloParams) error
+	// User login.
+	// (POST /login)
+	PostLogin(ctx echo.Context) error
+	// Register user.
+	// (POST /register)
+	PostRegister(ctx echo.Context) error
+	// Get user info.
+	// (GET /user/{id})
+	GetUserId(ctx echo.Context, id string, params GetUserIdParams) error
+	// Update user profile.
+	// (PATCH /user/{id})
+	PatchUserId(ctx echo.Context, id string, params PatchUserIdParams) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -45,21 +100,97 @@ type ServerInterfaceWrapper struct {
 	Handler ServerInterface
 }
 
-// Hello converts echo context to params.
-func (w *ServerInterfaceWrapper) Hello(ctx echo.Context) error {
+// PostLogin converts echo context to params.
+func (w *ServerInterfaceWrapper) PostLogin(ctx echo.Context) error {
 	var err error
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params HelloParams
-	// ------------- Required query parameter "id" -------------
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostLogin(ctx)
+	return err
+}
 
-	err = runtime.BindQueryParameter("form", true, true, "id", ctx.QueryParams(), &params.Id)
+// PostRegister converts echo context to params.
+func (w *ServerInterfaceWrapper) PostRegister(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostRegister(ctx)
+	return err
+}
+
+// GetUserId converts echo context to params.
+func (w *ServerInterfaceWrapper) GetUserId(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, ctx.Param("id"), &id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetUserIdParams
+
+	headers := ctx.Request().Header
+	// ------------- Required header parameter "Authorization" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
+		var Authorization string
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, valueList[0], &Authorization)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Authorization: %s", err))
+		}
+
+		params.Authorization = Authorization
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Header parameter Authorization is required, but not found"))
+	}
+
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.Hello(ctx, params)
+	err = w.Handler.GetUserId(ctx, id, params)
+	return err
+}
+
+// PatchUserId converts echo context to params.
+func (w *ServerInterfaceWrapper) PatchUserId(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, ctx.Param("id"), &id)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PatchUserIdParams
+
+	headers := ctx.Request().Header
+	// ------------- Required header parameter "Authorization" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
+		var Authorization string
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithLocation("simple", false, "Authorization", runtime.ParamLocationHeader, valueList[0], &Authorization)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Authorization: %s", err))
+		}
+
+		params.Authorization = Authorization
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Header parameter Authorization is required, but not found"))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PatchUserId(ctx, id, params)
 	return err
 }
 
@@ -91,20 +222,27 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
-	router.GET(baseURL+"/hello", wrapper.Hello)
+	router.POST(baseURL+"/login", wrapper.PostLogin)
+	router.POST(baseURL+"/register", wrapper.PostRegister)
+	router.GET(baseURL+"/user/:id", wrapper.GetUserId)
+	router.PATCH(baseURL+"/user/:id", wrapper.PatchUserId)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/7RSTY/TMBD9K9bAMWoK7Cl3JPYAQrCcVj2Y5DVx5djemUmlqsp/R+O20JU4wsmO52Xe",
-	"x8yZ+jyXnJBUqDuT9BNmX68fmTN/g5ScBPZQOBewBtTyDBE/1oKeCqgjUQ5ppHVtiPGyBMZA3fNv4K65",
-	"AfPPA3qltaFPiDH/Vw5DhrTP1iOGHlee5GdDfX58MhkaNNrnDwG77+Bj6EENHcEScqKO3m22m60hc0Hy",
-	"JVBHH+pTQ8XrVMW2k5mx2wi1w5x4DTk9DtRdrFY8+xkKFuqezxSs/csCPlFzUxUGurenvKC5TuYuipAU",
-	"I5jWdWfoS4ZVyfvt1o4+J0WqUnwpMfRVTHsQs3S+a/iWsaeO3rR/dqG9LkL7ekI1zgHScyh6ieYJoo6h",
-	"CycL6GH78M+4X2/gX7i/ZHX7vKShLoQs8+z5ZJqmIC6IOyyizjs1iUhDySGp0+xGqDvlxYl6Vgwb9zXC",
-	"C9yACIVT+/2G31yIBXy8zWzhSB1NqqVr25h7H6csSutu/RUAAP//x+wl0k8DAAA=",
+	"H4sIAAAAAAAC/9RVTW+bQBD9K2jaIzJumxO3Vq0iq59y01MURRsYYFPY2cwOiVKL/17tYmo7xnUj2ZJ7",
+	"g2V23sx7M48FZNRYMmjEQboAl1XYqPD4gZl4js6ScegPLJNFFo3hc4POqTJ8kEeLkIIT1qaErouB8a7V",
+	"jDmkl38Cr+IhkG5uMRPoYvhEpTZzvGvRyTaEVc49EOcjGDHYigxem7a5Qd5fxEZ0vMr8l6J2Na7X69FG",
+	"sET2124f5FroJ5rxarZg5lhqJ6xE024Kiraur41qcJyDoxG0wt1D1mYXz+NsjJUfDnlmCvp/GVl1sIuN",
+	"PS3srfIJpD/SpiAfXOsMl5g9AHyeXfisoqX2r7666Dvyvc58J/fITpOBFF5NppOpjySLRlkNKbwJR75d",
+	"qULhSe1XIzREvTa+raD9LIcUvpGTsD3QU4lO3lH+6AMzMoIm3FHW1joLt5JbR2blO/7pJWMBKbxIVsaU",
+	"LF0p2bCLrusV61kO9b2eTg+NtdQwYOXoMtZWesK+fvRsnU3PDga56bgjkF9IooJak4cxcG3TKH4cRA3a",
+	"TMKXhMNW9vOzW6r5EHUctcYM7siijbrRaWs3iBC1Dnkpn39MFjrvPGqJI/KdowSfyeGIbG452UhbF+gk",
+	"YpSWzclQeo4S2Iy8K0763wKrBgXZQXq5eJJm9j6iIlwAb6SQBsODeHBQncP6n0G4xXithS1/XvRJKlR5",
+	"SLlM87aVilj/ClQ8K+NVsOCsGtlif7w2CIdf4qf/4yMv8L+M3CkZr82VYD9slqnQNU76+w75fhi3lms/",
+	"DyI2TZKaMlVX3pO7q+53AAAA//9PM7eWfwsAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -6,6 +6,8 @@ import (
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/handler"
 	"github.com/SawitProRecruitment/UserService/repository"
+	"github.com/SawitProRecruitment/UserService/util"
+	"github.com/go-playground/validator/v10"
 
 	"github.com/labstack/echo/v4"
 )
@@ -17,6 +19,8 @@ func main() {
 
 	generated.RegisterHandlers(e, server)
 	e.Logger.Fatal(e.Start(":1323"))
+
+	e.Validator = &util.CustomValidator{Validator: validator.New()}
 }
 
 func newServer() *handler.Server {

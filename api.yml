@@ -17,23 +17,90 @@ info:
 servers:
   - url: http://localhost
 paths:
-  /hello:
+  /register:
+    post:
+      summary: Register user.
+      requestBody:
+        content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/RegistrationRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/RegistrationResponse"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /login:
+    post:
+      summary: User login.
+      requestBody:
+        content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/LoginRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /user/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of user
+        required: true
+        schema:
+          type: string
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
     get:
-      summary: This is just a test endpoint to get you started. Please delete this endpoint.
-      operationId: hello
-      parameters:
-        - name: id
-          in: query
-          required: true
-          schema:
-            type: integer
+      summary: Get user info.
       responses:
         '200':
           description: Test return
           content:
             application/json:    
               schema:
-                $ref: "#/components/schemas/HelloResponse"
+                $ref: "#/components/schemas/UserInfoResponse"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      summary: Update user profile.
+      requestBody:
+        content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/UserInfoRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/UserInfoResponse"
         '404':
           description: Not found
           content:
@@ -42,12 +109,60 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
-    HelloResponse:
+    RegistrationRequest:
       type: object
       required:
-        - message
+        - phone_number
+        - full_name
+        - password
       properties:
-        message:
+        phone_number:
+          type: string
+        full_name:
+          type: string
+        password:
+          type: string
+    RegistrationResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+    LoginRequest:
+      type: object
+      required:
+        - phone_number
+        - password
+      properties:
+        phone_number:
+          type: string
+        password:
+          type: string
+    LoginResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        jwt_token:
+          type: string
+    UserInfoRequest:
+      type: object
+      required:
+        - phone_number
+        - full_name
+        - password
+      properties:
+        phone_number:
+          type: string
+        full_name:
+          type: string
+        password:
+          type: string
+    UserInfoResponse:
+      type: object
+      properties:
+        phone_number:
+          type: string
+        full_name:
           type: string
     ErrorResponse:
       type: object

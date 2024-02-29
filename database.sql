@@ -8,10 +8,21 @@
   */
 
 /** This is test table. Remove this table and replace with your own tables. */
-CREATE TABLE test (
+CREATE TABLE users (
 	id serial PRIMARY KEY,
-	name VARCHAR ( 50 ) UNIQUE NOT NULL
+  phone_number VARCHAR(50) UNIQUE NOT NULL,
+  full_name VARCHAR(50),
+  password VARCHAR,
+  created_at TIMESTAMP WITH TIME ZONE,
+  updated_at TIMESTAMP WITH TIME ZONE
 );
 
-INSERT INTO test (name) VALUES ('test1');
-INSERT INTO test (name) VALUES ('test2');
+CREATE TABLE activity (
+	id serial PRIMARY KEY,
+  user_id int,
+  last_login TIMESTAMP WITH TIME ZONE,
+  login_attempt int,
+  created_at TIMESTAMP WITH TIME ZONE,
+  updated_at TIMESTAMP WITH TIME ZONE,
+  CONSTRAINT unique_user_id UNIQUE (user_id)
+);
